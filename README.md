@@ -1,6 +1,6 @@
-# LM-KBC 2026 — Shared Task System
+# AKBC Shared Task 2026
 
-System submission for the **AKBC/LM-KBC 2026 Shared Task** (EMNLP 2026).
+System submission for the **AKBC Shared Task 2026** (EMNLP 2026).
 
 Given a `(SubjectEntity, Relation)` pair, predict the complete set of correct object strings using a language model. Six relations, scored by macro-F1 (relations weighted equally).
 
