@@ -24,7 +24,7 @@ model its own errors and asking it to propose a better prompt. This is a form of
 | countryLandBordersCountry | Single exhaustive prompt, single-shot | 0.989 |
 | companyTradesAtStockExchange | Vote≥3 of 5 prompts (+anti_confusion) | 0.675 |
 | personHasCityOfDeath | Vote≥4 of 4 prompts | 0.500 |
-| hasArea | 6-run cluster-median ensemble (5 SC + 1 anchored native-lang SC) | 0.580 |
+| hasArea | 6-run cluster-median ensemble (5 base SC + 1 anchored native-lang SC with qwen+gemma-3-4b two-model language ID) | 0.580 |
 | hasCapacity | `country_tier` prompt + confidence-escalated SC (5→9) | 0.220 |
 | awardWonBy | Union of alphabetical + year_sweep passes, each per-name vote (SC×5, ≥2/5) | 0.180 |
 | **Overall** | | **0.558** |
@@ -42,7 +42,7 @@ Note: hasArea val = 0.580 uses the *exact* submitted ensemble6 (r1–r5 SC + anc
 | Single-shot base prompt | ~0.55 | baseline | — |
 | Confidence-escalated SC (5→9), cluster-median | 0.580 | ✓ | median of densest cluster removes sampling variance |
 | 5-run ensemble (r1–r5, cluster-median) | 0.590 | ✓ | averaging independent SC runs reduces variance further |
-| 6-run ensemble (+ anchored native-lang) | 0.580 | ✓ **adopted (v6, submitted)** | anchored run adds diversity as 1 of 6 votes; slightly lowers val (0.590→0.580) but included in the test submission |
+| 6-run ensemble (+ anchored native-lang, qwen+gemma two-model language ID) | 0.580 | ✓ **adopted (v6, submitted)** | anchored run adds diversity as 1 of 6 votes; slightly lowers val (0.590→0.580) but included in the test submission |
 | native_lang (simple) | 0.540 | ✗ | entity boundary shift: local-language query maps to a *different* geographic extent (e.g. sub-national territory → whole country) |
 | native_lang_anchored (standalone) | ~0.54 | ✗ standalone / ✓ as ensemble member | pinning entity identity in English first partially fixes the shift, but not enough to beat plain SC alone |
 | entity_aware prompt + SC | 0.560 | ✗ | over-thinks entity type; sometimes misclassifies country vs island |

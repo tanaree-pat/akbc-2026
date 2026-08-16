@@ -32,7 +32,7 @@ Overall macro-F1: **0.5699**
 
 | Relation | Technique |
 |---|---|
-| hasArea | 6-run cluster-median ensemble: 5 runs with base prompt (SC 5→9, conf≥0.80) + 1 run with `native_lang_anchored` prompt (SC 5→9, conf≥0.80) |
+| hasArea | 6-run cluster-median ensemble: 5 runs with base prompt (SC 5→9, conf≥0.80) + 1 anchored native-language run with **two-model language ID** — `qwen/qwen3.6-27b` proposes the entity's local language + confidence; if <0.7, `google/gemma-3-4b-it` is also asked and the higher-confidence guess wins; if final confidence ≥0.7 the `native_lang_anchored` prompt is issued in that language (entity name kept in English), else English; same SC 5→9 |
 | hasCapacity | `country_tier` prompt + confidence-escalated SC (5→9, conf≥0.80) |
 | personHasCityOfDeath | Vote≥4 of 4 prompt variants: `recent_aware`, `meta_antidefault`, `city_precision`, `recent_precise` |
 | countryLandBordersCountry | Single exhaustive prompt, single-shot |
