@@ -347,15 +347,15 @@ Expected competition score ≈ 0.418 based on val.
 
 ## Score history
 
-### Baseline (Qwen3.5-9B, from repo)
+### Baseline (Qwen3.5-9B, from repo) — validation, macro-F1
 ```
-awardWonBy                    0.087
-companyTradesAtStockExchange  0.366
-countryLandBordersCountry     0.662
+awardWonBy                    0.101
+companyTradesAtStockExchange  0.354
+countryLandBordersCountry     0.665
 hasArea                       0.290
 hasCapacity                   0.180
-personHasCityOfDeath          0.180
-*** All Relations ***          0.308
+personHasCityOfDeath          0.210
+*** All Relations ***          0.313
 ```
 
 ### Run 1 (Ollama qwen2.5:14b, basic prompts)
@@ -2828,7 +2828,7 @@ The 4 variants used: `recent_aware`, `meta_antidefault`, `city_precision`, `rece
 
 **Val verdict:** 4-way vote≥3 matches 3-way vote≥2 (both 0.500). No val improvement.
 
-**Test rationale for vote≥4 of 4:** tested on test set; gives 22/100 non-empty predictions with P=0.840. Trades recall for very high precision — appropriate when false positives are costlier. Used in v6 test submission. Output: `data/test_final_personDeath_4way_vote3.jsonl` (note: file named vote3 but submission uses effectively all-4-agree logic on test via `/tmp/test_personDeath_vote4.jsonl`).
+**Test rationale for vote≥4 of 4:** tested on test set; gives 22/100 non-empty predictions with P=0.870 (recall 0.550, F1 0.490, from Codabench). Trades recall for very high precision — appropriate when false positives are costlier. Used in v6 test submission. Output: `data/test_final_personDeath_4way_vote3.jsonl` (note: file named vote3 but submission uses effectively all-4-agree logic on test via `/tmp/test_personDeath_vote4.jsonl`).
 
 ---
 

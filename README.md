@@ -7,7 +7,7 @@ Given a `(SubjectEntity, Relation)` pair, predict the complete set of correct ob
 ## Constraints
 
 - **Closed-book** — no web search, RAG, or external KB lookup at inference time.
-- **≤ 32 B parameters** across all inference-time models. This system uses `qwen/qwen3.6-27b` (27 B) as the sole inference model.
+- **≤ 32 B parameters** across all inference-time models. The primary model is `qwen/qwen3.6-27b` (27 B); a small `google/gemma-3-4b-it` (4 B) is used only for language identification in the hasArea anchored run, for a total of 31 B.
 - **No fine-tuning.** Post-processing (normalization, dedup, clustering, voting) is allowed.
 
 ## Results
@@ -37,7 +37,7 @@ Overall macro-F1: **0.5699**
 | personHasCityOfDeath | Vote≥4 of 4 prompt variants: `recent_aware`, `meta_antidefault`, `city_precision`, `recent_precise` |
 | countryLandBordersCountry | Single exhaustive prompt, single-shot |
 | companyTradesAtStockExchange | Vote≥3 of 5 prompt variants: base (`simple`), `listed_check`, `meta_precision`, `meta_verify`, `anti_confusion` |
-| awardWonBy | Alphabetical sweep (`alphabetical` prompt) + per-name confidence vote (SC×5, ≥2/5 samples agree) |
+| awardWonBy | Union of two passes — `alphabetical` sweep and `year_sweep` — each with a per-name confidence vote (SC×5, ≥2/5 samples agree); keep all alphabetical names plus year_sweep names not already present |
 
 ## Setup
 
@@ -63,12 +63,12 @@ Run each relation's script, then assemble into a single submission file.
 
 ```bash
 # Step 1: Run each relation
-bash scripts/run_hasArea.sh data/test.jsonl          # 6 runs (~600 API calls)
+python scripts/run_hasArea.py --input data/test.jsonl   # 6 runs -> data/hasArea_runs/
 bash scripts/run_hasCapacity.sh data/test.jsonl data/hasCapacity_out.jsonl
 bash scripts/run_personDeath.sh data/test.jsonl      # 4 variants
 bash scripts/run_countryBorders.sh data/test.jsonl data/countryBorders_out.jsonl
 bash scripts/run_companyTrades.sh data/test.jsonl    # 5 variants
-bash scripts/run_awardWonBy.sh data/test.jsonl data/awardWonBy_out.jsonl
+bash scripts/run_awardWonBy.sh data/test.jsonl       # 2 passes -> data/awardWonBy_runs/
 
 # Step 2: Assemble into final submission
 python scripts/assemble_submission.py \
@@ -117,12 +117,13 @@ data/
   val_predictions_v6.jsonl   Our validation predictions (v6 system)
   predictions_v6.jsonl       Our test predictions (Codabench submission)
 scripts/
-  run_hasArea.sh             Reproduce hasArea (6-run ensemble)
+  run_hasArea.py             Generate all 6 hasArea runs (5 base SC + 1 two-model
+                             anchored native-language); ensemble in assemble_submission.py
   run_hasCapacity.sh         Reproduce hasCapacity (SC)
   run_personDeath.sh         Reproduce personDeath (4-way vote)
   run_countryBorders.sh      Reproduce countryBorders
   run_companyTrades.sh       Reproduce companyTrades (5-way vote)
-  run_awardWonBy.sh          Reproduce awardWonBy
+  run_awardWonBy.sh          Reproduce awardWonBy (alphabetical + year_sweep union)
   assemble_submission.py     Assemble per-relation outputs into final file
 ```
 

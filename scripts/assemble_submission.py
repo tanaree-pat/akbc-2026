@@ -4,12 +4,12 @@ assemble_submission.py
 Assemble per-relation output files into a single submission JSONL.
 
 Per-relation assembly logic:
-  hasArea          — cluster-median across 6 independent runs
+  hasArea          — cluster-median across the 6 runs from run_hasArea.py
   hasCapacity      — single run (country_tier + SC), copy directly
   personDeath      — vote>=4 of 4 variants (all 4 must agree on same city)
   countryBorders   — single run, copy directly
   companyTrades    — vote>=3 of 5 variants (exchange kept if >=3 predict it)
-  awardWonBy       — single run (alphabetical + per-name SC vote), copy directly
+  awardWonBy       — union of alphabetical + year_sweep passes (each per-name SC vote)
 
 Usage:
     python scripts/assemble_submission.py \\
@@ -92,7 +92,7 @@ def load_file(path: str):
 # ---------------------------------------------------------------------------
 
 def assemble_hasArea(input_rows, data_dir: str):
-    """6-run cluster-median ensemble."""
+    """Cluster-median across the 6 runs produced by run_hasArea.py."""
     run_files = [
         f"{data_dir}/hasArea_runs/run1.jsonl",
         f"{data_dir}/hasArea_runs/run2.jsonl",
@@ -104,7 +104,7 @@ def assemble_hasArea(input_rows, data_dir: str):
     runs = []
     for f in run_files:
         if not Path(f).exists():
-            raise FileNotFoundError(f"Missing hasArea run file: {f}")
+            raise FileNotFoundError(f"Missing hasArea run file: {f} (run run_hasArea.py first)")
         runs.append(load_file(f))
 
     result = {}
@@ -197,6 +197,29 @@ def assemble_companyTrades(input_rows, data_dir: str):
     return result
 
 
+def assemble_awardWonBy(input_rows, data_dir: str):
+    """Union of the alphabetical and year_sweep passes: keep all alphabetical names,
+    then add year_sweep names not already present (normalized, case-insensitive)."""
+    alpha_file = f"{data_dir}/awardWonBy_runs/alphabetical.jsonl"
+    sweep_file = f"{data_dir}/awardWonBy_runs/year_sweep.jsonl"
+    for f in (alpha_file, sweep_file):
+        if not Path(f).exists():
+            raise FileNotFoundError(f"Missing awardWonBy pass file: {f} (run run_awardWonBy.sh first)")
+    alpha = load_file(alpha_file)
+    sweep = load_file(sweep_file)
+
+    result = {}
+    for row in input_rows:
+        if row["Relation"] != "awardWonBy":
+            continue
+        entity = row["SubjectEntity"]
+        a = alpha.get((entity, "awardWonBy"), [])
+        s = sweep.get((entity, "awardWonBy"), [])
+        seen = {normalize_string(x) for x in a}
+        result[entity] = list(a) + [x for x in s if normalize_string(x) not in seen]
+    return result
+
+
 def assemble_single(input_rows, relation: str, file_path: str):
     """Single run: copy ObjectEntities directly."""
     if not Path(file_path).exists():
@@ -246,9 +269,8 @@ def main():
     print("Assembling companyTradesAtStockExchange (vote>=3 of 5)...")
     companyTrades = assemble_companyTrades(input_rows, args.data_dir)
 
-    print("Assembling awardWonBy (single run)...")
-    awardWonBy = assemble_single(input_rows, "awardWonBy",
-                                  f"{args.data_dir}/awardWonBy_out.jsonl")
+    print("Assembling awardWonBy (alphabetical + year_sweep union)...")
+    awardWonBy = assemble_awardWonBy(input_rows, args.data_dir)
 
     # Combine into final output, preserving input row order
     lookup = {

@@ -5,7 +5,7 @@ validation macro-F1 and a verdict. The final system (v6) uses only the ✓ techn
 
 **Model:** `qwen/qwen3.6-27b` (27B) via OpenRouter, closed-book, no fine-tuning.
 **Metric:** macro-F1 on the validation split (numeric relations use 5% relative tolerance).
-**Baseline (organizer reference system):** overall 0.308.
+**Baseline (organizer reference system):** overall 0.313 (validation).
 
 For the full phase-by-phase narrative, see `DOCUMENTATION.md`.
 
@@ -26,7 +26,7 @@ model its own errors and asking it to propose a better prompt. This is a form of
 | personHasCityOfDeath | Vote≥4 of 4 prompts | 0.500 |
 | hasArea | 6-run cluster-median ensemble (5 SC + 1 anchored native-lang SC) | 0.580 |
 | hasCapacity | `country_tier` prompt + confidence-escalated SC (5→9) | 0.220 |
-| awardWonBy | Alphabetical sweep + per-name confidence vote (SC×5, ≥2/5) | 0.180 |
+| awardWonBy | Union of alphabetical + year_sweep passes, each per-name vote (SC×5, ≥2/5) | 0.180 |
 | **Overall** | | **0.558** |
 
 Note: hasArea val = 0.580 uses the *exact* submitted ensemble6 (r1–r5 SC + anchored native-lang SC, sequential cluster-median). The 5-run ensemble5 (no anchored) scores 0.590 on val — the anchored 6th run slightly lowers val but was included in the test submission for diversity. We report 0.580 to match the submitted system exactly.
@@ -78,7 +78,7 @@ variance — so resampling recovers little. This is the hardest relation.
 | Single prompt | ~0.43 | baseline | — |
 | Vote≥2 of 3 (recent_aware + meta_antidefault + city_precision) | 0.500 | ✓ | abstain when variants disagree → high precision |
 | Vote≥3 of 4 (+ recent_precise) | 0.500 | = | matches 3-way; no val gain |
-| Vote≥4 of 4 | 0.500 (test P=0.840) | ✓ **adopted (v6)** | strictest agreement → very high precision on test |
+| Vote≥4 of 4 | 0.500 (test P=0.870) | ✓ **adopted (v6)** | strictest agreement → very high precision on test |
 | Vote≥2 of 4 | 0.440 | ✗ | too permissive, false positives |
 | `committed` prompt (age heuristic) + vote-5 | 0.490 | ✗ | over-predicts cities for still-living elderly people |
 | `timeline` prompt | 0.310 | ✗ | over-commits to career city |
@@ -119,9 +119,9 @@ US errors = NYSE↔Nasdaq confusion; others = wrong-country default.
 
 | Technique | Val F1 | Verdict | Why |
 |---|---|---|---|
-| Alphabetical sweep + per-name confidence vote (SC×5, ≥2/5) | 0.180 | ✓ **adopted** | sweeping by letter avoids year-by-year reasoning loops; per-name vote filters hallucinations |
-| year_sweep standalone | 0.133 | ✗ | model stalls in loops over individual years |
-| alpha + sweep union | +0.028 (self-gold) | partial | mainly helps huge sets (Nobel Prize in Literature) |
+| Alphabetical sweep + per-name confidence vote (SC×5, ≥2/5) | 0.180 | strong single pass | sweeping by letter avoids year-by-year reasoning loops; per-name vote filters hallucinations |
+| year_sweep standalone | 0.133 | ✗ standalone | on its own the model stalls in loops over individual years |
+| **alphabetical + year_sweep union** | 0.180 (+0.028 self-gold) | ✓ **adopted (submitted)** | union recovers names the alphabetical pass misses on huge sets (e.g. Nobel Prize in Literature, 72→128 names) |
 
 **Key finding:** this relation is enumeration/recall-bound, NOT obscurity-bound. Missing
 recipients are as notable as recalled ones; gold sets reach 610 names. Sampling can't
