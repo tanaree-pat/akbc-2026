@@ -1,0 +1,7 @@
+DIAGNOSIS: The model exhibits a strong bias toward over-prediction, frequently hallucinating listings for private, delisted, or obscure entities and relying on superficial name-based heuristics to assign incorrect exchanges (e.g., mapping "Kader" to Dhaka or "Leclanché" to Paris). This indicates a lack of robust abstention capability, where the model prioritizes generating a plausible exchange over verifying actual public trading status, resulting in high false-positive rates and systematic errors for companies with ambiguous or non-obvious listings. The failure pattern is dominated by hallucination and heuristic guessing rather than simple knowledge gaps, as evidenced by confident but wrong predictions for entities that should return empty arrays.
+
+PROMPT_A:
+Return a JSON array of stock exchanges where {subject} is currently listed. Strictly enforce precision: only include exchanges for which you have definitive knowledge of an active listing. Do not infer listings from company names, headquarters, or sector; do not include private, delisted, or acquired companies. If the company is not publicly traded or the listing is unknown, return []. No explanation.
+
+PROMPT_B:
+Identify stock exchanges for {subject}. Before outputting, verify: (1) The company is publicly traded (not private or delisted), and (2) The exchange is a confirmed listing (not a guess based on name or region). If verification fails, return []. Avoid hallucinating exchanges for obscure or name-ambiguous entities. Return only a JSON array.

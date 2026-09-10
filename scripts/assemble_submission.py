@@ -14,10 +14,11 @@ Per-relation assembly logic:
 Usage:
     python scripts/assemble_submission.py \\
         --input data/test.jsonl \\
-        --output data/predictions_v6.jsonl
+        --output data/predictions.jsonl
 
 All per-relation files must exist before running this script.
-Run scripts/run_*.sh first to generate them.
+Run scripts/run_hasArea.py, run_hasCapacity.py, run_personDeath.py, run_countryBorders.py,
+run_companyTrades.py, and run_awardWonBy.py first to generate them.
 """
 
 import argparse
@@ -204,7 +205,7 @@ def assemble_awardWonBy(input_rows, data_dir: str):
     sweep_file = f"{data_dir}/awardWonBy_runs/year_sweep.jsonl"
     for f in (alpha_file, sweep_file):
         if not Path(f).exists():
-            raise FileNotFoundError(f"Missing awardWonBy pass file: {f} (run run_awardWonBy.sh first)")
+            raise FileNotFoundError(f"Missing awardWonBy pass file: {f} (run scripts/run_awardWonBy.py first)")
     alpha = load_file(alpha_file)
     sweep = load_file(sweep_file)
 
@@ -242,7 +243,7 @@ def main():
     parser = argparse.ArgumentParser(description="Assemble per-relation outputs into submission file")
     parser.add_argument("--input", default="data/test.jsonl",
                         help="Input JSONL with (SubjectEntity, Relation) pairs")
-    parser.add_argument("--output", default="data/predictions_v6.jsonl",
+    parser.add_argument("--output", default="data/predictions.jsonl",
                         help="Output assembled submission file")
     parser.add_argument("--data-dir", default="data",
                         help="Base data directory where per-relation run folders are")

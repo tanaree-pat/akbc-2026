@@ -22,7 +22,7 @@ Inference models: qwen 27B + gemma 4B = 31B, within the 32B budget.
 
 Usage (run from the repository root, like the other scripts/ commands):
   python scripts/run_hasArea.py --input data/test.jsonl     # -> data/hasArea_runs/run{1..5}.jsonl + run6_anchored.jsonl
-  python scripts/assemble_submission.py --input data/test.jsonl --output data/predictions_v6.jsonl
+  python scripts/assemble_submission.py --input data/test.jsonl --output data/predictions.jsonl
 
 Resumable & crash-safe: re-running skips (run, entity) pairs already in --rawlog and
 keeps values already written to each run file.

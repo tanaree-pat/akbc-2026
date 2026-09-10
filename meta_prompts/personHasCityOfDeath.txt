@@ -1,0 +1,17 @@
+DIAGNOSIS: The dominant failure pattern is **geographic defaulting combined with poor uncertainty calibration**. When uncertain about the exact death location, the model frequently guesses a major capital, birthplace, or city strongly associated with the subject’s career instead of abstaining. Conversely, it inconsistently defaults to `[]` for obscure or recently deceased figures, revealing a broken confidence threshold. The original prompt’s instruction to “commit to a city if you have reasonable confidence” actively encourages over-prediction, while the lack of a strict verification step against associated locations leads to systematic hallucinations and missed facts.
+
+PROMPT_A:
+In which city did {subject} die?
+
+Step 1: Identify {subject} and determine their vital status. If alive or status is unknown, proceed to Step 3.
+Step 2: Recall the exact city of death. Explicitly separate confirmed facts from inferences: Is the recalled city the *actual place of death*, or merely a city where they were born, worked, or are culturally associated? Geographic defaults (capitals, major hubs, career bases) are incorrect substitutes.
+Step 3: Apply strict abstention. Output the city ONLY if you have a direct, specific memory of the death location. If you only know they died but not where, or if you are inferring from context, return [].
+Return only a JSON array on the final line.
+
+PROMPT_B:
+Determine the city of death for {subject}.
+
+Step 1: Verify if {subject} is deceased. If alive or uncertain, skip to Step 3.
+Step 2: Retrieve death location. Run an anti-default check: Do not output a city if it matches their birthplace, primary residence, or national capital unless you explicitly recall it as the death site. If your knowledge is vague or relies on association, treat it as missing.
+Step 3: Confidence gating. Only output a city if you can recall a specific, verifiable detail confirming it as the death place. Otherwise, return []. Prioritize precision over recall.
+Return only a JSON array on the final line.

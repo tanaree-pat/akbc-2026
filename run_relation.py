@@ -162,7 +162,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--relation", default=RELATION)
     parser.add_argument("--provider", default="openrouter", choices=["openrouter", "groq", "ollama", "google"])
-    parser.add_argument("--model", default="qwen/qwen-2.5-32b-instruct")
+    parser.add_argument("--model", default="qwen/qwen3.6-27b")
     parser.add_argument("--input", default="data/val.jsonl")
     parser.add_argument("--output", default="data/val_predictions.jsonl")
     parser.add_argument("--start-from", type=int, default=0,
@@ -191,9 +191,8 @@ def main():
     parser.add_argument("--temperature", type=float, default=None,
                         help="Sampling temperature. Default 0.0 for single-shot, 0.7 when --samples>1")
     parser.add_argument("--prompt-style", default="simple",
-                        help="Prompt variant to use. Options: simple, decompose, entity_aware, tier_range, "
-                             "event_recall, comparison, country_tier, regional_recall, chain_of_thought, "
-                             "recent_aware, city_precision")
+                        help="Prompt variant to use. See models/prompts.py (PROMPT_VARIANTS[relation]) "
+                             "for the variants available per relation; 'simple' is the base prompt.")
     parser.add_argument("--verify", action="store_true",
                         help="Add a second self-verification pass that sanity-checks the numeric answer")
     parser.add_argument("--verbose", action="store_true",

@@ -11,7 +11,7 @@ from models.prompts import PROMPTS, PROMPT_VARIANTS, VERIFY_TEMPLATE, VERIFY_MET
 
 
 class OpenRouterModel(AbstractModel):
-    def __init__(self, model_name: str = "qwen/qwen-2.5-32b-instruct", temperature: float = 0.0,
+    def __init__(self, model_name: str = "qwen/qwen3.6-27b", temperature: float = 0.0,
                  prompt_style: str = "simple", verify: bool = False, verbose: bool = False,
                  log_name: str = ""):
         self.model_name = model_name

@@ -1,7 +1,7 @@
 # Experiments Log — What Worked and What Didn't
 
 This document summarizes every inference-time technique we tried per relation, with
-validation macro-F1 and a verdict. The final system (v6) uses only the ✓ techniques.
+validation macro-F1 and a verdict. The final system uses only the ✓ techniques.
 
 **Model:** `qwen/qwen3.6-27b` (27B) via OpenRouter, closed-book, no fine-tuning.
 **Metric:** macro-F1 on the validation split (numeric relations use 5% relative tolerance).
@@ -13,11 +13,13 @@ For the full phase-by-phase narrative, see `DOCUMENTATION.md`.
 `meta_antidefault`) were produced by **error-driven prompt refinement** — feeding the
 model its own errors and asking it to propose a better prompt. This is a form of
 *automatic prompt optimization* (cf. Pryzant et al., APO); we avoid the term
-"meta-prompting." The `meta_*` code labels are kept as-is.
+"meta-prompting." The `meta_*` code labels are kept as-is. The script that runs this
+is `scripts/meta_prompt.py` (see README.md, "Per-relation techniques"); its original
+output for these two relations is archived at `meta_prompts/`.
 
 ---
 
-## Final system (v6) — per relation
+## Final system — per relation
 
 | Relation | Final technique | Val F1 |
 |---|---|---|
@@ -31,7 +33,7 @@ model its own errors and asking it to propose a better prompt. This is a form of
 
 Note: hasArea val = 0.580 uses the *exact* submitted ensemble6 (r1–r5 SC + anchored native-lang SC, sequential cluster-median). The 5-run ensemble5 (no anchored) scores 0.590 on val — the anchored 6th run slightly lowers val but was included in the test submission for diversity. We report 0.580 to match the submitted system exactly.
 
-**Test overall (Codabench, principled v3 score): 0.5699.**
+**Test overall (Codabench): 0.5699.**
 
 ---
 
@@ -42,13 +44,11 @@ Note: hasArea val = 0.580 uses the *exact* submitted ensemble6 (r1–r5 SC + anc
 | Single-shot base prompt | ~0.55 | baseline | — |
 | Confidence-escalated SC (5→9), cluster-median | 0.580 | ✓ | median of densest cluster removes sampling variance |
 | 5-run ensemble (r1–r5, cluster-median) | 0.590 | ✓ | averaging independent SC runs reduces variance further |
-| 6-run ensemble (+ anchored native-lang, qwen+gemma two-model language ID) | 0.580 | ✓ **adopted (v6, submitted)** | anchored run adds diversity as 1 of 6 votes; slightly lowers val (0.590→0.580) but included in the test submission |
+| 6-run ensemble (+ anchored native-lang, qwen+gemma two-model language ID) | 0.580 | ✓ **adopted (submitted)** | anchored run adds diversity as 1 of 6 votes; slightly lowers val (0.590→0.580) but included in the test submission |
 | native_lang (simple) | 0.540 | ✗ | entity boundary shift: local-language query maps to a *different* geographic extent (e.g. sub-national territory → whole country) |
 | native_lang_anchored (standalone) | ~0.54 | ✗ standalone / ✓ as ensemble member | pinning entity identity in English first partially fixes the shift, but not enough to beat plain SC alone |
 | entity_aware prompt + SC | 0.560 | ✗ | over-thinks entity type; sometimes misclassifies country vs island |
 | 2-step local-language (`run_2step_fair.py`) | 0.52 | ✗ | translation adds no signal — a place's area is a stored number independent of query language |
-
-† anchored run done on test; val hasArea reported from ensemble5 = 0.590.
 
 **Key finding:** multilingual querying does NOT help numeric recall. The *number* is
 language-independent; what changes across languages is *which entity* the model resolves
@@ -61,7 +61,7 @@ to — an entity-boundary shift, not a knowledge gain.
 | Technique | Val F1 | Verdict | Why |
 |---|---|---|---|
 | `country_tier` prompt, single-shot | 0.210 | baseline | prompt supplies regional/competition-tier capacity norms |
-| `country_tier` + confidence-escalated SC (5→9) | 0.220 | ✓ **adopted (v6)** | +0.010; small variance reduction on partially-known venues |
+| `country_tier` + confidence-escalated SC (5→9) | 0.220 | ✓ **adopted** | +0.010; small variance reduction on partially-known venues |
 | native_lang (simple) | 0.180 | ✗ | entity boundary shift + knowledge gap |
 | native_lang_anchored ensemble (2-run) | worse | ✗ | cluster-median tie-breaking bug lets the wrong value dominate with only 2 runs |
 | `tier_range` prompt | 0.210 | ✗ | explicit ranges give no benefit over country_tier |
@@ -78,7 +78,7 @@ variance — so resampling recovers little. This is the hardest relation.
 | Single prompt | ~0.43 | baseline | — |
 | Vote≥2 of 3 (recent_aware + meta_antidefault + city_precision) | 0.500 | ✓ | abstain when variants disagree → high precision |
 | Vote≥3 of 4 (+ recent_precise) | 0.500 | = | matches 3-way; no val gain |
-| Vote≥4 of 4 | 0.500 (test P=0.870) | ✓ **adopted (v6)** | strictest agreement → very high precision on test |
+| Vote≥4 of 4 | 0.500 (test P=0.870) | ✓ **adopted** | strictest agreement → very high precision on test |
 | Vote≥2 of 4 | 0.440 | ✗ | too permissive, false positives |
 | `committed` prompt (age heuristic) + vote-5 | 0.490 | ✗ | over-predicts cities for still-living elderly people |
 | `timeline` prompt | 0.310 | ✗ | over-commits to career city |
@@ -105,7 +105,7 @@ wrong knowledge — NOT recency. Verified missed deaths were old (2009, 2019).
 |---|---|---|---|
 | `simple` prompt alone | ~0.60 | baseline | — |
 | Vote≥2 of 4 (simple + listed_check + meta_precision + meta_verify) | 0.672 | superseded | precision from cross-prompt agreement (intermediate config) |
-| Vote≥3 of 5 (+ anti_confusion) | 0.675 | ✓ **adopted (v6, submitted)** | anti_confusion fixes NYSE↔Nasdaq confusions; higher precision |
+| Vote≥3 of 5 (+ anti_confusion) | 0.675 | ✓ **adopted (submitted)** | anti_confusion fixes NYSE↔Nasdaq confusions; higher precision |
 | anti_confusion alone, single-shot | 0.655 | ✗ standalone | good idea, needs the ensemble |
 | 5B verifier (Llama-3.2-3B) | 0.417 | ✗ | verification isn't easier than generation below the knowledge boundary |
 
