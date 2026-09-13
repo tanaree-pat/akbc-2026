@@ -4,18 +4,6 @@ System submission for the **AKBC Shared Task 2026** (EMNLP 2026).
 
 Given a `(SubjectEntity, Relation)` pair, predict the complete set of correct object strings using a language model. Six relations, scored by F1 macro-averaged over all `(subject, relation)` pairs.
 
-## Paper
-
-**DataMind at AKBC Shared Task 2026: Relation-Specific Multiple Prompting for Closed-Book Knowledge Base Completion**
-
-PDF: [`paper/DataMind_at_AKBC_Shared_Task_2026.pdf`](paper/DataMind_at_AKBC_Shared_Task_2026.pdf)
-
-We combine relation-specific multiple prompting, consistency-based aggregation, and
-error-driven prompt refinement to reach a validation macro-F1 of 0.558 and test
-macro-F1 of 0.5699 (organizer baselines: 0.313 / 0.296), within a 32B parameter
-budget and with no retrieval or fine-tuning.
-
-
 ## Constraints
 
 - **Closed-book** — no web search, RAG, or external KB lookup at inference time.
