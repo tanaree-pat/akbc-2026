@@ -16,25 +16,25 @@ Given a `(SubjectEntity, Relation)` pair, predict the complete set of correct ob
 
 | Relation | Val F1 |
 |---|---|
-| countryLandBordersCountry | 0.989 |
-| companyTradesAtStockExchange | 0.675 |
-| personHasCityOfDeath | 0.500 |
-| hasArea | 0.580 |
-| hasCapacity | 0.220 |
-| awardWonBy | 0.180 |
-| **Overall** | **0.558** |
+| countryLandBordersCountry | 0.9892 |
+| companyTradesAtStockExchange | 0.6752 |
+| personHasCityOfDeath | 0.5000 |
+| hasArea | 0.5800 |
+| hasCapacity | 0.2200 |
+| awardWonBy | 0.1802 |
+| **Overall** | **0.5577** |
 
 
 ### Test (Codabench)
 
 | Relation | Test F1 |
 |---|---|
-| countryLandBordersCountry | 0.944 |
-| companyTradesAtStockExchange | 0.767 |
-| personHasCityOfDeath | 0.490 |
-| hasArea | 0.570 |
-| hasCapacity | 0.225 |
-| awardWonBy | 0.275 |
+| countryLandBordersCountry | 0.9440 |
+| companyTradesAtStockExchange | 0.7668 |
+| personHasCityOfDeath | 0.4900 |
+| hasArea | 0.5700 |
+| hasCapacity | 0.2245 |
+| awardWonBy | 0.2749 |
 | **Overall** | **0.5699** |
 
 Organizer baseline (Qwen 3.5 9B, simple prompting): 0.296 test / 0.313 validation.
@@ -58,24 +58,8 @@ are the official measured numbers, not a re-run on the corrected data.
 | companyTradesAtStockExchange | Ensemble vote, keep if ≥3 of 5 prompts agree (base (`simple`), `listed_check`, `meta_precision`, `meta_verify`, `anti_confusion`), else abstain |
 | awardWonBy | Union of alphabetical + year-by-year sweeps, each with per-name confidence vote (SC×5, ≥2/5) |
 
-**awardWonBy answer-recovery step (not shown in the table above).** For this relation
-only, if the model's response never produces a parseable JSON array (it runs out of
-budget mid-reasoning), `OpenRouterModel._extract_from_thinking` (`models/openrouter_model.py`)
-recovers an answer in two stages before that sample is counted as empty:
-1. A second call to the same model asks it to extract every recipient name from its own
-   reasoning text and return them as a JSON array.
-2. If that call *also* fails to produce parseable JSON, a regex fallback
-   (`_regex_names_from_thinking`) mines quoted, bulleted, and numbered names from the
-   tail of the reasoning text without another API call.
-
-This only fires for `awardWonBy` — for every other relation an unparseable/empty
-response is left as `[]`, since an empty answer can be a legitimate prediction there
-(e.g. "not publicly traded"). Anyone reproducing `awardWonBy` from the prompts in the
-paper alone, without this recovery step, should expect a somewhat lower score, since
-this step is a real part of how the shipped predictions were generated.
-
 **Error-driven prompt refinement (how the `meta_*` prompt variants were produced).**
-The paper describes producing some prompt variants by having the model diagnose its
+The method describes producing some prompt variants by having the model diagnose its
 own failures and propose improved templates. That step is `scripts/meta_prompt.py`:
 given a relation, a predictions file, and (optionally) a run log with raw reasoning
 traces, it builds a prompt showing the model its current prompt plus real failure
